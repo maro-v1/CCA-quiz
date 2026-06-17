@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CCA Foundations Practice Quiz</title>
+<script src="questions.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #232636;
+    --border: #2e3147;
+    --text: #e8eaf0;
+    --text-dim: #8b8fa8;
+    --accent: #6c72f5;
+    --accent-dim: #3d4196;
+    --green: #2ecc71;
+    --green-bg: #0d2b1a;
+    --red: #e74c3c;
+    --red-bg: #2b0d0d;
+    --yellow: #f39c12;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding-top: 48px;
+  }
+
+  /* Disclaimer */
+  #disclaimer {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    background: #2a1f00;
+    border-bottom: 1px solid #5c4300;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+    color: #f5c842;
+  }
+  #disclaimer.hidden { display: none; }
+  #disclaimer p { flex: 1; }
+  #disclaimer button {
+    background: none;
+    border: 1px solid #f5c842;
+    color: #f5c842;
+    padding: 3px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  /* Layout */
+  #app {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 32px 16px 64px;
+  }
+
+  h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+  h2 { font-size: 20px; font-weight: 600; margin-bottom: 16px; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+
+  /* Buttons */
+  .btn {
+    display: inline-block;
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 500;
+    transition: opacity 0.15s;
+  }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:not(:disabled):hover { opacity: 0.85; }
+  .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .btn-secondary:not(:disabled):hover { background: var(--border); }
+  .btn-danger { background: #4a1515; color: var(--red); border: 1px solid var(--red); }
+  .btn-danger:hover { background: var(--red-bg); }
+
+  /* Start screen */
+  #start-screen .subtitle {
+    color: var(--text-dim);
+    font-size: 15px;
+    margin-bottom: 28px;
+  }
+  .mode-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+  @media (max-width: 500px) { .mode-cards { grid-template-columns: 1fr; } }
+  .mode-card {
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .mode-card:hover { border-color: var(--accent-dim); background: var(--surface2); }
+  .mode-card.selected { border-color: var(--accent); background: #1e2040; }
+  .mode-card h3 { font-size: 16px; margin-bottom: 6px; }
+  .mode-card p { font-size: 13px; color: var(--text-dim); }
+  .resume-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 20px;
+  }
+  .resume-box p { font-size: 14px; color: var(--text-dim); margin-bottom: 12px; }
+  .resume-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  .start-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+  /* Question screen */
+  .progress-bar-wrap {
+    background: var(--surface2);
+    border-radius: 99px;
+    height: 6px;
+    margin-bottom: 20px;
+    overflow: hidden;
+  }
+  .progress-bar { height: 100%; background: var(--accent); border-radius: 99px; transition: width 0.3s; }
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+  }
+  .question-text {
+    font-size: 17px;
+    line-height: 1.6;
+    margin-bottom: 24px;
+  }
+  .options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+  .option-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    font-size: 15px;
+    line-height: 1.5;
+  }
+  .option-label:has(input:checked) { border-color: var(--accent); background: #1e2040; }
+  .option-label:hover:not(.locked) { border-color: var(--accent-dim); background: var(--surface2); }
+  .option-label.correct { border-color: var(--green) !important; background: var(--green-bg) !important; }
+  .option-label.incorrect { border-color: var(--red) !important; background: var(--red-bg) !important; }
+  .option-label input[type=radio] { margin-top: 3px; accent-color: var(--accent); flex-shrink: 0; }
+  .option-letter {
+    font-weight: 700;
+    color: var(--accent);
+    flex-shrink: 0;
+    min-width: 18px;
+  }
+  .option-label.correct .option-letter { color: var(--green); }
+  .option-label.incorrect .option-letter { color: var(--red); }
+  .explanation {
+    background: var(--surface2);
+    border-left: 3px solid var(--accent);
+    padding: 14px 16px;
+    border-radius: 0 8px 8px 0;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text-dim);
+    margin-bottom: 20px;
+    display: none;
+  }
+  .explanation.visible { display: block; }
+  .nav-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .remaining-label { font-size: 13px; color: var(--text-dim); margin-left: auto; }
+
+  /* Summary screen */
+  .summary-list { list-style: none; }
+  .summary-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+  }
+  .summary-item:last-child { border-bottom: none; }
+  .summary-qnum { color: var(--text-dim); min-width: 28px; font-size: 13px; }
+  .summary-qtext { flex: 1; }
+  .summary-ans { font-weight: 600; color: var(--accent); min-width: 40px; text-align: right; }
+  .summary-ans.unanswered { color: var(--red); }
+  .summary-actions { margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap; }
+
+  /* Results screen */
+  .score-card {
+    text-align: center;
+    padding: 32px;
+  }
+  .score-big { font-size: 56px; font-weight: 800; color: var(--accent); }
+  .score-sub { font-size: 16px; color: var(--text-dim); margin-top: 4px; }
+  .results-list { list-style: none; }
+  .result-item {
+    padding: 18px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .result-item:last-child { border-bottom: none; }
+  .result-qtext { font-size: 15px; line-height: 1.5; margin-bottom: 10px; }
+  .result-answers { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; margin-bottom: 8px; }
+  .result-ans-label { color: var(--text-dim); }
+  .result-correct-ans { color: var(--green); font-weight: 600; }
+  .result-user-ans.right { color: var(--green); }
+  .result-user-ans.wrong { color: var(--red); }
+  .result-explanation { font-size: 13px; color: var(--text-dim); line-height: 1.6; }
+  .results-actions { margin-top: 24px; display: flex; gap: 10px; flex-wrap: wrap; }
+  .results-load-more { text-align: center; padding: 16px 0; }
+</style>
+</head>
+<body>
+
+<div id="disclaimer">
+  <p>⚠️ <strong>Disclaimer:</strong> This is an unofficial practice quiz. Questions may not reflect the actual CCA Foundations exam. Use for study purposes only.</p>
+  <button onclick="dismissDisclaimer()">Dismiss</button>
+</div>
+
+<div id="app"></div>
+
+<script>
+const STORAGE_KEY = 'ccaf_quiz_state';
+const QUIZ_SIZE = 60;
+
+// --- Disclaimer ---
+(function() {
+  if (sessionStorage.getItem('disclaimer_dismissed')) {
+    document.getElementById('disclaimer').classList.add('hidden');
+  }
+})();
+
+function dismissDisclaimer() {
+  sessionStorage.setItem('disclaimer_dismissed', '1');
+  document.getElementById('disclaimer').classList.add('hidden');
+}
+
+// --- State ---
+let state = null;
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  return null;
+}
+
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+function clearState() {
+  localStorage.removeItem(STORAGE_KEY);
+  state = null;
+}
+
+// --- Fisher-Yates shuffle ---
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function pickQuestions(excludeIds, count) {
+  const pool = QUESTIONS.filter(q => !excludeIds.has(q.id));
+  const picked = shuffle(pool).slice(0, count);
+  return picked.map(q => q.id);
+}
+
+// --- Letter to index ---
+function letterToIndex(letter) {
+  return letter.charCodeAt(0) - 65; // A=0, B=1, C=2, D=3
+}
+
+function indexToLetter(i) {
+  return String.fromCharCode(65 + i);
+}
+
+function getQuestion(id) {
+  return QUESTIONS.find(q => q.id === id);
+}
+
+// --- Render ---
+function render() {
+  const app = document.getElementById('app');
+  if (!state || state.screen === 'start') {
+    app.innerHTML = renderStart();
+  } else if (state.screen === 'question') {
+    app.innerHTML = renderQuestion();
+  } else if (state.screen === 'summary') {
+    app.innerHTML = renderSummary();
+  } else if (state.screen === 'results') {
+    app.innerHTML = renderResults();
+  }
+  attachHandlers();
+}
+
+// --- Start screen ---
+function renderStart() {
+  const saved = loadState();
+  const hasSave = saved && saved.screen !== 'start';
+  const resumeHtml = hasSave ? `
+    <div class="resume-box">
+      <p>You have a saved quiz (${saved.mode} mode, Q${(saved.currentIndex||0)+1}/${saved.questionIds.length}). Resume or start fresh?</p>
+      <div class="resume-actions">
+        <button class="btn btn-primary" onclick="resumeQuiz()">Resume</button>
+        <button class="btn btn-secondary" onclick="newQuiz()">New Quiz</button>
+      </div>
+    </div>
+  ` : '';
+
+  return `
+    <h1>CCA Foundations Quiz</h1>
+    <p class="subtitle" style="color:var(--text-dim);margin-bottom:24px;">Practice with 60 randomly selected questions from a bank of ${QUESTIONS.length}.</p>
+    ${resumeHtml}
+    ${hasSave ? '' : `
+    <div class="mode-cards">
+      <div class="mode-card selected" id="mode-immediate" onclick="selectMode('immediate')">
+        <h3>Immediate Feedback</h3>
+        <p>See correct answer and explanation after each question.</p>
+      </div>
+      <div class="mode-card" id="mode-later" onclick="selectMode('later')">
+        <h3>Review at End</h3>
+        <p>Answer all 60 questions, then see results on a summary screen.</p>
+      </div>
+    </div>
+    <div class="start-actions">
+      <button class="btn btn-primary" onclick="startQuiz()">Start Quiz</button>
+    </div>
+    `}
+  `;
+}
+
+let selectedMode = 'immediate';
+
+function selectMode(mode) {
+  selectedMode = mode;
+  document.querySelectorAll('.mode-card').forEach(el => el.classList.remove('selected'));
+  document.getElementById('mode-' + mode)?.classList.add('selected');
+}
+
+function resumeQuiz() {
+  state = loadState();
+  render();
+}
+
+function newQuiz() {
+  clearState();
+  render();
+}
+
+function startQuiz() {
+  const ids = pickQuestions(new Set(), QUIZ_SIZE);
+  state = {
+    screen: 'question',
+    mode: selectedMode,
+    questionIds: ids,
+    usedIds: ids.slice(),
+    currentIndex: 0,
+    answers: {},
+    locked: {},
+    submitted: false,
+    resultsOffset: 0,
+  };
+  saveState();
+  render();
+}
+
+// --- Question screen ---
+function renderQuestion() {
+  const idx = state.currentIndex;
+  const id = state.questionIds[idx];
+  const q = getQuestion(id);
+  const total = state.questionIds.length;
+  const userAnswer = state.answers[id];
+  const isImmediate = state.mode === 'immediate';
+  const isAnswered = userAnswer !== undefined;
+  const isLocked = isImmediate && !!(state.locked?.[id]);
+
+  const pct = Math.round(((idx + 1) / total) * 100);
+  const remaining = QUESTIONS.length - state.usedIds.length;
+
+  let optionsHtml = q.options.map((opt, i) => {
+    const letter = indexToLetter(i);
+    const correctLetter = q.correctAnswer;
+    let cls = 'option-label';
+    if (isLocked) {
+      cls += ' locked';
+      if (letter === correctLetter) cls += ' correct';
+      else if (letter === userAnswer) cls += ' incorrect';
+    }
+    const checked = userAnswer === letter ? 'checked' : '';
+    const disabled = isLocked ? 'disabled' : '';
+    return `
+      <label class="${cls}">
+        <input type="radio" name="option" value="${letter}" ${checked} ${disabled} onchange="selectAnswer('${letter}')">
+        <span class="option-letter">${letter}</span>
+        <span>${escHtml(opt)}</span>
+      </label>
+    `;
+  }).join('');
+
+  let explanationHtml = '';
+  if (isImmediate && isLocked && q.explanation) {
+    explanationHtml = `<div class="explanation visible">${escHtml(q.explanation)}</div>`;
+  }
+
+  const submitBtn = isImmediate ? `<button class="btn btn-primary" onclick="submitAnswer()" ${!isAnswered || isLocked ? 'disabled' : ''}>Submit Answer</button>` : '';
+
+  const prevDisabled = idx === 0 ? 'disabled' : '';
+  const isLast = idx === total - 1;
+  const nextLabel = isLast ? 'Review Answers' : 'Next';
+  const nextDisabled = (isImmediate && !isLocked) ? 'disabled' : '';
+
+  const loadMoreDisabled = remaining === 0 ? 'disabled' : '';
+  const loadMoreLabel = remaining > 0 ? `Load One More (${remaining} remaining)` : 'No more questions';
+
+  return `
+    <div class="progress-label">
+      <span>Question ${idx + 1} / ${total}</span>
+      <span>${Object.keys(state.answers).length} answered</span>
+    </div>
+    <div class="progress-bar-wrap"><div class="progress-bar" style="width:${pct}%"></div></div>
+    <div class="card">
+      <p class="question-text">${escHtml(q.question)}</p>
+      <div class="options">${optionsHtml}</div>
+      ${explanationHtml}
+      <div class="nav-actions">
+        <button class="btn btn-secondary" onclick="prevQuestion()" ${prevDisabled}>← Prev</button>
+        ${submitBtn}
+        <button class="btn btn-primary" onclick="nextQuestion()" ${nextDisabled}>${nextLabel}</button>
+        <button class="btn btn-secondary" onclick="loadMore()" ${loadMoreDisabled} style="margin-left:auto">${loadMoreLabel}</button>
+      </div>
+    </div>
+    <div style="margin-top:12px">
+      <button class="btn btn-danger" onclick="confirmReset()">Reset</button>
+    </div>
+  `;
+}
+
+function selectAnswer(letter) {
+  const id = state.questionIds[state.currentIndex];
+  if (state.locked?.[id]) return;
+  state.answers[id] = letter;
+  saveState();
+  render();
+}
+
+function submitAnswer() {
+  const id = state.questionIds[state.currentIndex];
+  if (state.answers[id] === undefined) return;
+  if (!state.locked) state.locked = {};
+  state.locked[id] = true;
+  saveState();
+  render();
+}
+
+function nextQuestion() {
+  const idx = state.currentIndex;
+  const total = state.questionIds.length;
+  if (idx < total - 1) {
+    state.currentIndex++;
+    saveState();
+    render();
+  } else {
+    state.screen = 'summary';
+    saveState();
+    render();
+  }
+}
+
+function prevQuestion() {
+  if (state.currentIndex > 0) {
+    state.currentIndex--;
+    saveState();
+    render();
+  }
+}
+
+function loadMore() {
+  const used = new Set(state.usedIds);
+  if (used.size >= QUESTIONS.length) return;
+  const newIds = pickQuestions(used, 1);
+  if (newIds.length === 0) return;
+  state.questionIds.push(...newIds);
+  state.usedIds.push(...newIds);
+  saveState();
+  render();
+}
+
+function confirmReset() {
+  if (confirm('Reset quiz? All progress will be lost.')) {
+    clearState();
+    selectedMode = 'immediate';
+    render();
+  }
+}
+
+// --- Summary screen (Later mode) ---
+function renderSummary() {
+  const items = state.questionIds.map((id, i) => {
+    const q = getQuestion(id);
+    const ans = state.answers[id];
+    const ansHtml = ans
+      ? `<span class="summary-ans">${ans}</span>`
+      : `<span class="summary-ans unanswered">—</span>`;
+    return `
+      <li class="summary-item" onclick="goToQuestion(${i})" style="cursor:pointer">
+        <span class="summary-qnum">Q${i+1}</span>
+        <span class="summary-qtext">${escHtml(q.question.substring(0, 80))}${q.question.length > 80 ? '…' : ''}</span>
+        ${ansHtml}
+      </li>
+    `;
+  }).join('');
+
+  const answered = Object.keys(state.answers).length;
+  const total = state.questionIds.length;
+
+  return `
+    <h2>Review Your Answers</h2>
+    <p style="color:var(--text-dim);font-size:14px;margin-bottom:16px">${answered}/${total} answered. Click a question to change your answer.</p>
+    <div class="card" style="padding:8px 16px">
+      <ul class="summary-list">${items}</ul>
+    </div>
+    <div class="summary-actions">
+      <button class="btn btn-primary" onclick="submitAll()">Submit All</button>
+      <button class="btn btn-secondary" onclick="goToQuestion(${state.questionIds.length - 1})">Back to Last Question</button>
+      <button class="btn btn-danger" onclick="confirmReset()">Reset</button>
+    </div>
+  `;
+}
+
+function goToQuestion(idx) {
+  state.screen = 'question';
+  state.currentIndex = idx;
+  saveState();
+  render();
+}
+
+function submitAll() {
+  state.screen = 'results';
+  state.submitted = true;
+  state.resultsOffset = 0;
+  saveState();
+  render();
+}
+
+// --- Results screen ---
+const RESULTS_PAGE = 20;
+
+function renderResults() {
+  const total = state.questionIds.length;
+  let score = 0;
+  state.questionIds.forEach(id => {
+    const q = getQuestion(id);
+    if (state.answers[id] === q.correctAnswer) score++;
+  });
+
+  const pct = Math.round((score / total) * 100);
+  const offset = state.resultsOffset || 0;
+  const visible = state.questionIds.slice(0, offset + RESULTS_PAGE);
+
+  const items = visible.map((id, i) => {
+    const q = getQuestion(id);
+    const userAns = state.answers[id];
+    const correct = q.correctAnswer;
+    const isRight = userAns === correct;
+    const userAnsText = userAns
+      ? `${userAns}: ${escHtml(q.options[letterToIndex(userAns)])}`
+      : '(not answered)';
+    const correctAnsText = `${correct}: ${escHtml(q.options[letterToIndex(correct)])}`;
+    return `
+      <li class="result-item">
+        <div class="result-qtext"><strong>Q${i+1}.</strong> ${escHtml(q.question)}</div>
+        <div class="result-answers">
+          <span><span class="result-ans-label">Your answer: </span><span class="result-user-ans ${isRight ? 'right' : 'wrong'}">${userAnsText}</span></span>
+          ${!isRight ? `<span><span class="result-ans-label">Correct: </span><span class="result-correct-ans">${correctAnsText}</span></span>` : ''}
+        </div>
+        ${q.explanation ? `<div class="result-explanation">${escHtml(q.explanation)}</div>` : ''}
+      </li>
+    `;
+  }).join('');
+
+  const hasMore = visible.length < total;
+
+  return `
+    <div class="card score-card">
+      <div class="score-big">${score}/${total}</div>
+      <div class="score-sub">${pct}% correct</div>
+    </div>
+    <h2>Question Breakdown</h2>
+    <div class="card" style="padding:8px 16px">
+      <ul class="results-list">${items}</ul>
+      ${hasMore ? `<div class="results-load-more"><button class="btn btn-secondary" onclick="loadMoreResults()">Load More (${total - visible.length} remaining)</button></div>` : ''}
+    </div>
+    <div class="results-actions">
+      <button class="btn btn-primary" onclick="confirmReset()">Start New Quiz</button>
+    </div>
+  `;
+}
+
+function loadMoreResults() {
+  state.resultsOffset = (state.resultsOffset || 0) + RESULTS_PAGE;
+  saveState();
+  render();
+}
+
+// --- Helpers ---
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function attachHandlers() {
+  // radio inputs rendered with onchange inline, nothing extra needed
+}
+
+// --- Boot ---
+render();
+</script>
+</body>
+</html>
