@@ -1688,8 +1688,8 @@ const QUESTIONS = [
       "Add username-based conditional logic to the project skill's frontmatter",
       "Set override: true in the personal skill's frontmatter to take precedence over the project version"
     ],
-    "correctAnswer": "B",
-    "explanation": "Since project skills take precedence over personal skills with the same name, the developer must use a different skill name (like `/my-commit`) in their personal `~/.claude/skills/` directory to ensure their custom version is accessible alongside the team's project skill."
+    "correctAnswer": "A",
+    "explanation": "Personal skills take precedence over project skills with the same name. Creating a personal version in ~/.claude/skills/commit/SKILL.md allows the developer to customize behavior without affecting teammates. Using a different name would require changing all invocations, and conditional logic in the project skill would complicate maintenance."
   },
   {
     "id": 142,
