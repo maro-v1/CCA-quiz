@@ -2,9 +2,11 @@
 
 An unofficial practice quiz for the Claude Certified Architect (CCA) Foundations exam. Runs entirely in the browser — no install, no server.
 
+**Live:** https://maro-v1.github.io/CCA-quiz/
+
 ## How to run
 
-Open `index.html` in any browser.
+Visit the live app at https://maro-v1.github.io/CCA-quiz/, or clone the repo and open `index.html` locally for offline use.
 
 ## Features
 
